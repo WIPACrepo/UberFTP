@@ -130,7 +130,7 @@ AC_CHECK_HEADERS([globus_config.h],
 #
 CPPFLAGS="-I/$globus_location/include/globus -I/$globus_location/include $GLOBUS_CONFIG_CPPFLAGS"
 AC_CHECK_HEADERS([globus_common.h],
-                 [GLOBUS_COMMON_CPPFLAGS="-I/$globus_location/include/globus"],
+                 [GLOBUS_COMMON_CPPFLAGS="-I/$globus_location/include/globus -I/$globus_location/include"],
                  [AC_MSG_ERROR(globus_common.h not found)])
 
 CPPFLAGS="$GLOBUS_CONFIG_CPPFLAGS $GLOBUS_COMMON_CPPFLAGS"
