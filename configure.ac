@@ -108,10 +108,10 @@ AC_ARG_WITH(globus_config,
 	[  globus_config_location="$withval" ],
 	[  if test "x$globus_location" == "x/usr" ; then
 		# RPM installation
-		globus_config_location=-I$globus_location/lib64/globus/include
+		globus_config_location=$globus_location/lib64/globus/include
 	   else
 		# Source installation
-		globus_config_location=-I$globus_location/include/globus/gcc64dbg
+		globus_config_location=$globus_location/include/globus/gcc64dbg
 	   fi]
 )
 
@@ -128,7 +128,7 @@ AC_CHECK_HEADERS([globus_config.h],
 #
 # Now check for globus_common.h using globus_config.h's location
 #
-CPPFLAGS="-I/$globus_location/include/globus $GLOBUS_CONFIG_CPPFLAGS"
+CPPFLAGS="-I/$globus_location/include/globus -I/$globus_location/include $GLOBUS_CONFIG_CPPFLAGS"
 AC_CHECK_HEADERS([globus_common.h],
                  [GLOBUS_COMMON_CPPFLAGS="-I/$globus_location/include/globus"],
                  [AC_MSG_ERROR(globus_common.h not found)])

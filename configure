@@ -3827,10 +3827,10 @@ if test "${with_globus_config+set}" = set; then :
 else
     if test "x$globus_location" == "x/usr" ; then
 		# RPM installation
-		globus_config_location=-I$globus_location/lib64/globus/include
+		globus_config_location=$globus_location/lib64/globus/include
 	   else
 		# Source installation
-		globus_config_location=-I$globus_location/include/globus/gcc64dbg
+		globus_config_location=$globus_location/include/globus/gcc64dbg
 	   fi
 
 fi
@@ -4257,7 +4257,7 @@ done
 #
 # Now check for globus_common.h using globus_config.h's location
 #
-CPPFLAGS="-I/$globus_location/include/globus $GLOBUS_CONFIG_CPPFLAGS"
+CPPFLAGS="-I/$globus_location/include/globus -I/$globus_location/include $GLOBUS_CONFIG_CPPFLAGS"
 for ac_header in globus_common.h
 do :
   ac_fn_c_check_header_mongrel "$LINENO" "globus_common.h" "ac_cv_header_globus_common_h" "$ac_includes_default"
