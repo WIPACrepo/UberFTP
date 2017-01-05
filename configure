@@ -691,6 +691,7 @@ infodir
 docdir
 oldincludedir
 includedir
+runstatedir
 localstatedir
 sharedstatedir
 sysconfdir
@@ -721,6 +722,7 @@ enable_tcp_window
 enable_blksize
 enable_dependency_tracking
 with_globus
+with_globus_config
 '
       ac_precious_vars='build_alias
 host_alias
@@ -769,6 +771,7 @@ datadir='${datarootdir}'
 sysconfdir='${prefix}/etc'
 sharedstatedir='${prefix}/com'
 localstatedir='${prefix}/var'
+runstatedir='${localstatedir}/run'
 includedir='${prefix}/include'
 oldincludedir='/usr/include'
 docdir='${datarootdir}/doc/${PACKAGE_TARNAME}'
@@ -1021,6 +1024,15 @@ do
   | -silent | --silent | --silen | --sile | --sil)
     silent=yes ;;
 
+  -runstatedir | --runstatedir | --runstatedi | --runstated \
+  | --runstate | --runstat | --runsta | --runst | --runs \
+  | --run | --ru | --r)
+    ac_prev=runstatedir ;;
+  -runstatedir=* | --runstatedir=* | --runstatedi=* | --runstated=* \
+  | --runstate=* | --runstat=* | --runsta=* | --runst=* | --runs=* \
+  | --run=* | --ru=* | --r=*)
+    runstatedir=$ac_optarg ;;
+
   -sbindir | --sbindir | --sbindi | --sbind | --sbin | --sbi | --sb)
     ac_prev=sbindir ;;
   -sbindir=* | --sbindir=* | --sbindi=* | --sbind=* | --sbin=* \
@@ -1158,7 +1170,7 @@ fi
 for ac_var in	exec_prefix prefix bindir sbindir libexecdir datarootdir \
 		datadir sysconfdir sharedstatedir localstatedir includedir \
 		oldincludedir docdir infodir htmldir dvidir pdfdir psdir \
-		libdir localedir mandir
+		libdir localedir mandir runstatedir
 do
   eval ac_val=\$$ac_var
   # Remove trailing slashes.
@@ -1311,6 +1323,7 @@ Fine tuning of the installation directories:
   --sysconfdir=DIR        read-only single-machine data [PREFIX/etc]
   --sharedstatedir=DIR    modifiable architecture-independent data [PREFIX/com]
   --localstatedir=DIR     modifiable single-machine data [PREFIX/var]
+  --runstatedir=DIR       modifiable per-process data [LOCALSTATEDIR/run]
   --libdir=DIR            object code libraries [EPREFIX/lib]
   --includedir=DIR        C header files [PREFIX/include]
   --oldincludedir=DIR     C header files for non-gcc [/usr/include]
@@ -1361,6 +1374,7 @@ Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
   --with-globus=value     location of Globus installation, defaults to /usr
+  --with-globus_config=path   path to directory containing globus_config.h
 
 Some influential environment variables:
   CC          C compiler command
@@ -3806,14 +3820,29 @@ else
 fi
 
 
+
+# Check whether --with-globus_config was given.
+if test "${with_globus_config+set}" = set; then :
+  withval=$with_globus_config;   globus_config_location="$withval"
+else
+    if test "x$globus_location" == "x/usr" ; then
+		# RPM installation
+		globus_config_location=-I$globus_location/lib64/globus/include
+	   else
+		# Source installation
+		globus_config_location=-I$globus_location/include/globus/gcc64dbg
+	   fi
+
+fi
+
+
+
 #
 # globus_common.h depends on globus_config.h, so do it first
 #
 
-if test "x$globus_location" == "x/usr" ; then
-	# RPM installation
-	CPPFLAGS=-I$globus_location/lib64/globus/include
-	ac_ext=c
+CPPFLAGS=-I$globus_config_location
+ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
@@ -4219,29 +4248,11 @@ if test "x$ac_cv_header_globus_config_h" = xyes; then :
 _ACEOF
  GLOBUS_CONFIG_CPPFLAGS="$CPPFLAGS"
 else
-  as_fn_error install globus-core "globus_config.h not found" "$LINENO" 5
+  as_fn_error $? "globus_config.h not found, install globus-core" "$LINENO" 5
 fi
 
 done
 
-else
-	# Source installation
-	CPPFLAGS=-I$globus_location/include/globus/gcc64dbg
-	for ac_header in globus_config.h
-do :
-  ac_fn_c_check_header_mongrel "$LINENO" "globus_config.h" "ac_cv_header_globus_config_h" "$ac_includes_default"
-if test "x$ac_cv_header_globus_config_h" = xyes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_GLOBUS_CONFIG_H 1
-_ACEOF
- GLOBUS_CONFIG_CPPFLAGS="$CPPFLAGS"
-else
-  as_fn_error $? "globus_config.h not found in $globus_location" "$LINENO" 5
-fi
-
-done
-
-fi
 
 #
 # Now check for globus_common.h using globus_config.h's location
