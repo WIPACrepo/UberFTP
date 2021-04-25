@@ -1967,11 +1967,8 @@ _c_list(ch_t * ch, int rflag, char * path, char * ofile)
 
 	if (l_supports_list(ch->lh))
 	{
-		if (rflag || s_order() != ORDER_BY_NONE || IsGlob(path))
-		{
-			cr = _c_list_mlsx(ch, path, ofile, rflag);
-			return cr;
-		}
+		cr = _c_list_mlsx(ch, path, ofile, rflag);
+		return cr;
 	}
 
 	cr = _c_list_normal(ch, path, ofile);
@@ -3657,6 +3654,9 @@ _c_list_mlsx(ch_t * ch, char * path, char * ofile, int rflag)
 	char    * mode  = NULL;
 	char    * tstr  = NULL;
 	FILE    * outf  = stdout;
+	time_t    now   = time(NULL);
+	struct tm tmobj;
+	struct tm tmnow;
 
 	if (s_order() != ORDER_BY_NONE)
 		ml_init(&mlrs);
@@ -3678,6 +3678,8 @@ _c_list_mlsx(ch_t * ch, char * path, char * ofile, int rflag)
 			goto cleanup;
 		}
 	}
+
+	localtime_r(&now, &tmnow);
 
 	fth = ft_init(ch->lh, path ? path : ".", opts);
 	while (1)
@@ -3719,18 +3721,25 @@ _c_list_mlsx(ch_t * ch, char * path, char * ofile, int rflag)
 			FREE(mode);
 		}
 		if (mlp->mf.UNIX_owner)
-			fprintf(outf, "%-8s ", mlp->UNIX_owner);
+			fprintf(outf, "%-12s ", mlp->UNIX_owner);
 		if (mlp->mf.UNIX_group)
-			fprintf(outf, "%-9s ", mlp->UNIX_group);
+			fprintf(outf, "%-12s ", mlp->UNIX_group);
 		if (mlp->mf.X_archive)
 			fprintf(outf, "%-3s ", mlp->X_archive);
 		if (mlp->mf.X_family)
 			fprintf(outf, "%-7s ", mlp->X_family);
 		if (mlp->mf.Size)
 			fprintf(outf, "%13"GLOBUS_OFF_T_FORMAT"  ", mlp->size);
-		tstr = ctime(&mlp->modify);
-		if (mlp->mf.Modify)
-			fprintf(outf, "%-12.12s  ", tstr + 4);
+		if (mlp->mf.Modify) {
+			tstr = ctime(&mlp->modify);
+			localtime_r(&mlp->modify, &tmobj);
+			if (tmobj.tm_year == tmnow.tm_year)
+				fprintf(outf, "%-12.12s  ", tstr + 4);
+			else {
+				fprintf(outf, "%-6.6s  ", tstr + 4);
+				fprintf(outf, "%-4.4s  ", tstr + 20);
+			}
+		}
 		fprintf(outf, "%s", mlp->name);
 		if (mlp->mf.UNIX_slink)
 			fprintf(outf, " -> %s", mlp->UNIX_slink);
